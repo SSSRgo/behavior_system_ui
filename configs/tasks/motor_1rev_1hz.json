@@ -1,0 +1,9 @@
+{
+  "name": "motor_1rev_1hz",
+  "task_type": "motor_every_second",
+  "description": "Send one +1 revolution command every 1000 ms.",
+  "parameters": {
+    "interval_ms": 1000,
+    "immediate": true
+  }
+}

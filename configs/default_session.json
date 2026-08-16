@@ -1,0 +1,30 @@
+{
+  "animal_id": "",
+  "experimenter": "",
+  "task_name": "motor_test",
+  "notes": "",
+  "parameters": {
+    "motor": {
+      "default_rpm": 60,
+      "microsteps": 16,
+      "two_photon_trigger_pin": 8
+    },
+    "tasks": {
+      "motor_1hz": {
+        "interval_ms": 1000,
+        "command": "f"
+      },
+      "angle_reciprocation": {
+        "angle_degrees": 60,
+        "interval_ms": 1000,
+        "command_pattern": "m<angle/360>, m<-angle/360>"
+      }
+    },
+    "modules": {
+      "motor": true,
+      "lick": true,
+      "water": true,
+      "led": true
+    }
+  }
+}

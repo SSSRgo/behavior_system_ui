@@ -1,0 +1,15 @@
+{
+  "animal_id": "",
+  "experimenter": "",
+  "task_name": "motor_test",
+  "notes": "",
+  "parameters": {
+    "serial_baud": 115200,
+    "modules": [
+      "motor",
+      "lick",
+      "water",
+      "led"
+    ]
+  }
+}

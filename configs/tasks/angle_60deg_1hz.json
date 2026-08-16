@@ -1,0 +1,10 @@
+{
+  "name": "angle_60deg_1hz",
+  "task_type": "angle_reciprocation",
+  "description": "Alternate +50 and -50 degree movements every 100 ms.",
+  "parameters": {
+    "angle_degrees": 50,
+    "interval_ms": 100,
+    "immediate": true
+  }
+}

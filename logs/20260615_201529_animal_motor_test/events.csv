@@ -1,0 +1,2 @@
+timestamp,source,event_type,payload
+2026-06-15T12:15:29.018+00:00,session,started,"{""session_dir"": ""E:\\GPS\\PhD\\free moving 2p\\device\\behavior_system_ui\\logs\\20260615_201529_animal_motor_test""}"

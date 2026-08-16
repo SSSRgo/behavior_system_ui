@@ -1,0 +1,11 @@
+{
+  "name": "script_angle_30deg_2hz",
+  "task_type": "script",
+  "description": "Run the Python angle reciprocation script with +30/-30 deg every 500 ms.",
+  "parameters": {
+    "script_path": "../../task_scripts/angle_60deg_1hz.py",
+    "angle_degrees": 30,
+    "interval_ms": 500,
+    "immediate": true
+  }
+}
