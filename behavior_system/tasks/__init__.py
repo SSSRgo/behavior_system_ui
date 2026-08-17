@@ -3,6 +3,7 @@ from behavior_system.tasks.config import TaskConfig
 from behavior_system.tasks.motor_every_second import MotorEverySecondTask
 from behavior_system.tasks.registry import TaskRegistry
 from behavior_system.tasks.script_task import ScriptTaskWrapper, TaskContext
+from behavior_system.tasks.arduino_experiment import ArduinoExperimentTask
 
 __all__ = [
     "MotorAngleReciprocationTask",
@@ -11,4 +12,5 @@ __all__ = [
     "TaskConfig",
     "TaskContext",
     "TaskRegistry",
+    "ArduinoExperimentTask",
 ]

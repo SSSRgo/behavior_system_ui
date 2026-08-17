@@ -14,6 +14,7 @@ from behavior_system.tasks.angle_reciprocation import MotorAngleReciprocationTas
 from behavior_system.tasks.config import TaskConfig
 from behavior_system.tasks.motor_every_second import MotorEverySecondTask
 from behavior_system.tasks.script_task import ScriptTaskWrapper, TaskContext
+from behavior_system.tasks.arduino_experiment import ArduinoExperimentTask
 
 
 class TaskRegistry:
@@ -32,6 +33,8 @@ class TaskRegistry:
         self.led = led
 
     def create(self, config: TaskConfig) -> QObject:
+        if config.task_type == "arduino_experiment":
+            return ArduinoExperimentTask(self.motor.transport, self.bus)
         if config.task_type == "motor_every_second":
             return MotorEverySecondTask(self.motor, self.bus)
         if config.task_type == "angle_reciprocation":

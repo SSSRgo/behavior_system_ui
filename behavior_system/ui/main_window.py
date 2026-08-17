@@ -27,6 +27,7 @@ from behavior_system.core.event_bus import EventBus
 from behavior_system.core.events import Event
 from behavior_system.core.session import EventLogger, SessionConfig
 from behavior_system.devices.serial_transport import MockTransport, NullTransport, SerialTransport, list_serial_ports
+from behavior_system.devices.protocol import DeviceProtocolDecoder
 from behavior_system.modules.led import LEDModule
 from behavior_system.modules.lick import LickModule
 from behavior_system.modules.motor import MotorModule
@@ -49,6 +50,7 @@ class MainWindow(QMainWindow):
         self.bus.event_published.connect(self.on_event)
 
         self.transport = NullTransport()
+        self.device_decoder = DeviceProtocolDecoder()
         self.logger = EventLogger(PROJECT_ROOT / "logs")
 
         self.motor = MotorModule(self.transport, self.bus)
@@ -60,7 +62,6 @@ class MainWindow(QMainWindow):
         self.current_task = None
         self.current_task_config: TaskConfig | None = None
         self.task_config_dir = PROJECT_ROOT / "configs" / "tasks"
-        self.task_script_dir = PROJECT_ROOT / "task_scripts"
 
         self.port_combo = QComboBox()
         self.baud_spin = QSpinBox()
@@ -234,8 +235,14 @@ class MainWindow(QMainWindow):
     def refresh_task_configs(self) -> None:
         current = self.task_config_combo.currentData()
         self.task_config_combo.clear()
-        task_files = [*list_task_configs(self.task_config_dir), *list_task_configs(self.task_script_dir)]
-        for path in sorted(task_files):
+        task_files = []
+        for path in list_task_configs(self.task_config_dir):
+            try:
+                if TaskConfig.from_file(path).task_type == "arduino_experiment":
+                    task_files.append(path)
+            except Exception:
+                continue
+        for path in task_files:
             label = f"{path.stem} ({path.suffix.lstrip('.')})"
             self.task_config_combo.addItem(label, str(path))
 
@@ -250,9 +257,9 @@ class MainWindow(QMainWindow):
     def browse_task_config(self) -> None:
         path, _ = QFileDialog.getOpenFileName(
             self,
-            "Select task file",
-            str(self.task_script_dir if self.task_script_dir.exists() else self.task_config_dir),
-            "Task files (*.json *.py)",
+            "Select Arduino experiment config",
+            str(self.task_config_dir),
+            "Arduino experiment config (*.json)",
         )
         if not path:
             return
@@ -277,6 +284,24 @@ class MainWindow(QMainWindow):
         except Exception as exc:
             QMessageBox.critical(self, "Task config error", str(exc))
             self.publish("task", "config_load_failed", path=str(raw_path), error=str(exc))
+            return
+
+        if config.task_type != "arduino_experiment":
+            self.current_task_config = None
+            self.task_config_preview.setPlainText(
+                "Rejected: production tasks must use task_type 'arduino_experiment'."
+            )
+            QMessageBox.warning(
+                self,
+                "PC-timed task disabled",
+                "Production tasks must use task_type 'arduino_experiment' so the Arduino owns timing.",
+            )
+            self.publish(
+                "task",
+                "non_realtime_config_rejected",
+                name=config.name,
+                task_type=config.task_type,
+            )
             return
 
         self.current_task_config = config
@@ -316,6 +341,7 @@ class MainWindow(QMainWindow):
 
     def set_transport(self, transport) -> None:
         self.transport = transport
+        self.device_decoder = DeviceProtocolDecoder()
         for module in self.modules:
             module.set_transport(transport)
 
@@ -350,6 +376,13 @@ class MainWindow(QMainWindow):
             self.load_selected_task_config()
         if self.current_task_config is None:
             QMessageBox.warning(self, "No task config", "Load a task config before starting.")
+            return
+        if self.current_task_config.task_type != "arduino_experiment":
+            QMessageBox.warning(
+                self,
+                "PC-timed task disabled",
+                "Use an Arduino experiment config; Windows timers are not allowed to schedule trials.",
+            )
             return
 
         self.stop_all_tasks()
@@ -386,14 +419,27 @@ class MainWindow(QMainWindow):
         self.timeline.clear()
 
     def on_device_line(self, line: str) -> None:
-        self.bus.publish(Event(source="device", event_type="line", payload={"line": line}))
+        try:
+            event = self.device_decoder.decode(line)
+        except ValueError as exc:
+            event = Event(
+                source="device",
+                event_type="PROTOCOL_ERROR",
+                payload={"line": line, "error": str(exc)},
+            )
+        self.bus.publish(event)
 
     def publish(self, source: str, event_type: str, **payload) -> None:
         self.bus.publish(Event(source=source, event_type=event_type, payload=payload))
 
     def on_event(self, event: Event) -> None:
         payload = event.payload if event.payload else {}
-        self.event_log.appendPlainText(f"{event.timestamp} | {event.source} | {event.event_type} | {payload}")
+        master = "-" if event.master_timestamp_us is None else str(event.master_timestamp_us)
+        trial = "-" if event.trial_number is None else str(event.trial_number)
+        self.event_log.appendPlainText(
+            f"{event.timestamp} | master_us={master} | trial={trial} | "
+            f"{event.source} | {event.event_type} | value={event.value} | {payload}"
+        )
         self.timeline.add_event(event)
         self.logger.log(event)
 

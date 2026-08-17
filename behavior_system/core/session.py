@@ -45,7 +45,18 @@ class EventLogger:
 
         self.csv_file = (self.session_dir / "events.csv").open("w", newline="", encoding="utf-8")
         self.jsonl_file = (self.session_dir / "events.jsonl").open("w", encoding="utf-8")
-        self.csv_writer = csv.DictWriter(self.csv_file, fieldnames=["timestamp", "source", "event_type", "payload"])
+        self.csv_writer = csv.DictWriter(
+            self.csv_file,
+            fieldnames=[
+                "timestamp",
+                "master_timestamp_us",
+                "trial_number",
+                "source",
+                "event_type",
+                "value",
+                "payload",
+            ],
+        )
         self.csv_writer.writeheader()
         return self.session_dir
 

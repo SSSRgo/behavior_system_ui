@@ -24,7 +24,7 @@ class MotorWidget(QWidget):
         self.module = module
 
         self.rpm = QDoubleSpinBox()
-        self.rpm.setRange(0.1, 600.0)
+        self.rpm.setRange(0.1, 234.3)
         self.rpm.setDecimals(1)
         self.rpm.setSingleStep(10.0)
         self.rpm.setValue(60.0)

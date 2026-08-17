@@ -1,0 +1,16 @@
+{
+  "name": "arduino_brush_trial",
+  "task_type": "arduino_experiment",
+  "description": "Configure and start an Arduino Uno-timed brush trial; the PC does not schedule trial events.",
+  "parameters": {
+    "brush_delay_us": 2000000,
+    "brush_duration_us": 300000,
+    "trial_duration_us": 10000000,
+    "iti_us": 2000000,
+    "trial_count": 10,
+    "servo_move_us": 150000,
+    "servo_home_deg": 90,
+    "servo_stim_deg": 120,
+    "event_pulse_us": 5000
+  }
+}
