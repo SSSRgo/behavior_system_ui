@@ -31,10 +31,11 @@ from behavior_system.devices.protocol import DeviceProtocolDecoder
 from behavior_system.modules.led import LEDModule
 from behavior_system.modules.lick import LickModule
 from behavior_system.modules.motor import MotorModule
+from behavior_system.modules.servo import ServoModule
 from behavior_system.modules.water import WaterModule
 from behavior_system.tasks.config import TaskConfig, list_task_configs
 from behavior_system.tasks.registry import TaskRegistry
-from behavior_system.ui.module_widgets import LEDWidget, LickWidget, MotorWidget, WaterWidget
+from behavior_system.ui.module_widgets import LEDWidget, LickWidget, MotorWidget, ServoWidget, WaterWidget
 from behavior_system.ui.timeline_widget import TimelineWidget
 
 
@@ -54,10 +55,11 @@ class MainWindow(QMainWindow):
         self.logger = EventLogger(PROJECT_ROOT / "logs")
 
         self.motor = MotorModule(self.transport, self.bus)
+        self.servo = ServoModule(self.transport, self.bus)
         self.lick = LickModule(self.transport, self.bus)
         self.led = LEDModule(self.transport, self.bus)
         self.water = WaterModule(self.transport, self.bus)
-        self.modules = [self.motor, self.lick, self.water, self.led]
+        self.modules = [self.motor, self.servo, self.lick, self.water, self.led]
         self.task_registry = TaskRegistry(self.motor, self.bus, lick=self.lick, water=self.water, led=self.led)
         self.current_task = None
         self.current_task_config: TaskConfig | None = None
@@ -200,6 +202,7 @@ class MainWindow(QMainWindow):
     def build_module_tabs(self) -> QTabWidget:
         tabs = QTabWidget()
         tabs.addTab(MotorWidget(self.motor), self.motor.info.display_name)
+        tabs.addTab(ServoWidget(self.servo), self.servo.info.display_name)
         tabs.addTab(LickWidget(self.lick), self.lick.info.display_name)
         tabs.addTab(WaterWidget(self.water), self.water.info.display_name)
         tabs.addTab(LEDWidget(self.led), self.led.info.display_name)
