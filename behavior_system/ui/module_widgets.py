@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
 from behavior_system.modules.led import LEDModule
 from behavior_system.modules.lick import LickModule
 from behavior_system.modules.motor import MotorModule
+from behavior_system.modules.servo import ServoModule
 from behavior_system.modules.water import WaterModule
 
 
@@ -100,6 +101,104 @@ class MotorWidget(QWidget):
         layout.addLayout(row2)
         layout.addLayout(row3)
         layout.addStretch(1)
+
+
+class ServoWidget(QWidget):
+    def __init__(self, module: ServoModule) -> None:
+        super().__init__()
+        self.module = module
+
+        self.angle_a = QSpinBox()
+        self.angle_a.setRange(0, 180)
+        self.angle_a.setValue(90)
+        self.angle_a.setSuffix(" deg")
+
+        self.angle_b = QSpinBox()
+        self.angle_b.setRange(0, 180)
+        self.angle_b.setValue(90)
+        self.angle_b.setSuffix(" deg")
+
+        self.duration = QSpinBox()
+        self.duration.setRange(0, 10000)
+        self.duration.setValue(150)
+        self.duration.setSingleStep(50)
+        self.duration.setSuffix(" ms")
+
+        move_a = QPushButton("Move Servo A")
+        move_a.clicked.connect(
+            lambda: self.module.move_a(self.angle_a.value(), self.duration.value())
+        )
+
+        center_a = QPushButton("Center A (90 deg)")
+        center_a.clicked.connect(self.center_a)
+
+        move_b = QPushButton("Move Servo B")
+        move_b.clicked.connect(
+            lambda: self.module.move_b(self.angle_b.value(), self.duration.value())
+        )
+
+        center_b = QPushButton("Center B (90 deg)")
+        center_b.clicked.connect(self.center_b)
+
+        move_both = QPushButton("Move Both")
+        move_both.clicked.connect(
+            lambda: self.module.move_both(
+                self.angle_a.value(), self.angle_b.value(), self.duration.value()
+            )
+        )
+
+        center_both = QPushButton("Center Both")
+        center_both.clicked.connect(self.center_both)
+
+        form = QFormLayout()
+        form.addRow("Servo A target (D10)", self.angle_a)
+        form.addRow("Servo B target (D11)", self.angle_b)
+        form.addRow("Move time", self.duration)
+
+        individual_controls = QHBoxLayout()
+        individual_controls.addWidget(move_a)
+        individual_controls.addWidget(center_a)
+        individual_controls.addWidget(move_b)
+        individual_controls.addWidget(center_b)
+
+        combined_controls = QHBoxLayout()
+        combined_controls.addWidget(move_both)
+        combined_controls.addWidget(center_both)
+        combined_controls.addStretch(1)
+
+        wiring_note = QLabel(
+            "Servo power: external regulated 5 V supply; connect Arduino GND to "
+            "the servo supply GND. Do not power two MG90S servos from Arduino 5 V."
+        )
+        wiring_note.setWordWrap(True)
+
+        mode_note = QLabel(
+            "180-degree servo: value is position. 360-degree servo: about 90 is stop; "
+            "values below/above 90 control direction and speed. Move time is the "
+            "speed ramp time, not an automatic stop timer."
+        )
+        mode_note.setWordWrap(True)
+
+        layout = QVBoxLayout(self)
+        layout.addLayout(form)
+        layout.addLayout(individual_controls)
+        layout.addLayout(combined_controls)
+        layout.addWidget(wiring_note)
+        layout.addWidget(mode_note)
+        layout.addStretch(1)
+
+    def center_a(self) -> None:
+        self.angle_a.setValue(90)
+        self.module.center_a(self.duration.value())
+
+    def center_b(self) -> None:
+        self.angle_b.setValue(90)
+        self.module.center_b(self.duration.value())
+
+    def center_both(self) -> None:
+        self.angle_a.setValue(90)
+        self.angle_b.setValue(90)
+        self.module.center_both(self.duration.value())
 
 
 class LickWidget(QWidget):
