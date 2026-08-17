@@ -1,1 +1,8 @@
 **/.pio/
+__pycache__/
+*.py[cod]
+logs/
+*.csv
+.env
+.venv/
+.vscode/
